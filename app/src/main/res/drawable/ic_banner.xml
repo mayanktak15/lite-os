@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp"
+    android:height="180dp"
+    android:viewportWidth="320"
+    android:viewportHeight="180">
+    <!-- Banner background -->
+    <path
+        android:fillColor="#FF121212"
+        android:pathData="M0,0h320v180H0z" />
+    <!-- Accent bar -->
+    <path
+        android:fillColor="#FF00BFA5"
+        android:pathData="M0,170h320v10H0z" />
+    <!-- TV icon -->
+    <path
+        android:fillColor="#FF00BFA5"
+        android:pathData="M120,40h80c3,0 5,2 5,5v60c0,3 -2,5 -5,5h-80c-3,0 -5,-2 -5,-5V45c0,-3 2,-5 5,-5zM123,48v54h74V48H123zM144,116h32v5h-32z" />
+    <!-- Play triangle -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M148,63l28,14l-28,14z" />
+    <!-- "Lite TV" text approximation -->
+    <path
+        android:fillColor="#B3FFFFFF"
+        android:pathData="M105,140h110v4H105z" />
+</vector>

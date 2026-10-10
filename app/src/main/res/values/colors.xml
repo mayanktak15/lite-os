@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary palette -->
+    <color name="background_dark">#FF0D0D0D</color>
+    <color name="surface_dark">#FF1A1A1A</color>
+    <color name="card_dark">#FF242424</color>
+    <color name="card_focused">#FF333333</color>
+
+    <!-- Accent -->
+    <color name="accent">#FF00BFA5</color>
+    <color name="accent_dark">#FF00897B</color>
+
+    <!-- Text -->
+    <color name="text_primary">#FFFFFFFF</color>
+    <color name="text_secondary">#B3FFFFFF</color>
+    <color name="text_tertiary">#66FFFFFF</color>
+
+    <!-- Focus -->
+    <color name="focus_ring">#FF00BFA5</color>
+    <color name="focus_overlay">#2200BFA5</color>
+
+    <!-- Status -->
+    <color name="error_red">#FFEF5350</color>
+    <color name="success_green">#FF66BB6A</color>
+    <color name="warning_amber">#FFFFA726</color>
+
+    <!-- Player -->
+    <color name="player_overlay">#99000000</color>
+    <color name="buffering_bg">#CC000000</color>
+
+    <!-- Category colors -->
+    <color name="category_news">#FF42A5F5</color>
+    <color name="category_sports">#FF66BB6A</color>
+    <color name="category_movies">#FFAB47BC</color>
+    <color name="category_entertainment">#FFFFCA28</color>
+    <color name="category_regional">#FFEF5350</color>
+    <color name="category_kids">#FF26C6DA</color>
+    <color name="category_music">#FFEC407A</color>
+</resources>

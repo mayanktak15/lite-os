@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/playerRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <!-- ExoPlayer view -->
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/playerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:use_controller="false"
+        app:show_buffering="always"
+        app:surface_type="surface_view" />
+
+    <!-- Buffering overlay -->
+    <LinearLayout
+        android:id="@+id/bufferingOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:background="@color/buffering_bg"
+        android:visibility="gone">
+
+        <ProgressBar
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:indeterminate="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/buffering"
+            android:layout_marginTop="12dp"
+            style="@style/TextStyle.Body" />
+    </LinearLayout>
+
+    <!-- Channel info overlay (shown on UP press) -->
+    <LinearLayout
+        android:id="@+id/channelInfoOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:orientation="vertical"
+        android:background="@color/player_overlay"
+        android:padding="@dimen/player_overlay_padding"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/playerChannelName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/player_channel_name_size"
+            android:textColor="@color/text_primary"
+            android:fontFamily="sans-serif-medium" />
+
+        <TextView
+            android:id="@+id/playerChannelGroup"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/player_info_size"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+    <!-- Error overlay -->
+    <LinearLayout
+        android:id="@+id/playerErrorOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:background="@color/buffering_bg"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/playerErrorText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/error_playback"
+            android:textSize="@dimen/text_subheading"
+            android:textColor="@color/error_red" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/retry"
+            android:textSize="@dimen/text_body"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="12dp" />
+    </LinearLayout>
+
+</FrameLayout>

@@ -1,0 +1,17 @@
+#EXTM3U
+#EXTINF:-1 tvg-id="NDTVIndia" tvg-name="NDTV India" tvg-logo="https://example.com/ndtv.png" group-title="News",NDTV India
+https://example.com/stream/ndtv.m3u8
+#EXTINF:-1 tvg-id="RepublicTV" tvg-name="Republic TV" tvg-logo="https://example.com/republic.png" group-title="News",Republic TV
+https://example.com/stream/republic.m3u8
+#EXTINF:-1 tvg-id="TimesNow" tvg-name="Times Now" group-title="News",Times Now
+https://example.com/stream/timesnow.m3u8
+#EXTINF:-1 tvg-id="StarSports1" tvg-name="Star Sports 1" tvg-logo="https://example.com/starsports.png" group-title="Sports",Star Sports 1
+https://example.com/stream/starsports1.m3u8
+#EXTINF:-1 tvg-id="SonyMax" tvg-name="Sony Max" group-title="Movies",Sony Max
+https://example.com/stream/sonymax.m3u8
+#EXTINF:-1 tvg-name="Cartoon Network" group-title="Kids",Cartoon Network
+https://example.com/stream/cn.m3u8
+#EXTINF:-1 tvg-name="MTV India" tvg-logo="https://example.com/mtv.png" group-title="Music",MTV India
+https://example.com/stream/mtv.m3u8
+#EXTINF:-1 tvg-name="No Group Channel",Channel Without Group
+https://example.com/stream/nogroup.m3u8

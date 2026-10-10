@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_dark">
+
+    <!-- Title bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/nav_height"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="@dimen/screen_padding_horizontal"
+        android:paddingEnd="@dimen/screen_padding_horizontal"
+        android:background="@color/surface_dark">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/settings"
+            style="@style/TextStyle.Heading" />
+    </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="@dimen/section_spacing"
+            android:paddingBottom="@dimen/section_spacing">
+
+            <!-- Playlist source section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/playlist_source"
+                android:layout_marginStart="@dimen/screen_padding_horizontal"
+                android:layout_marginBottom="12dp"
+                style="@style/TextStyle.Subheading" />
+
+            <!-- Source: IPTV-Org India -->
+            <LinearLayout
+                android:id="@+id/sourceIptvOrgIndia"
+                style="@style/SettingsItemStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/source_iptv_org_india"
+                    style="@style/TextStyle.Body" />
+
+                <TextView
+                    android:id="@+id/sourceIptvOrgIndiaStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextStyle.Caption" />
+            </LinearLayout>
+
+            <!-- Source: IPTV-Org News -->
+            <LinearLayout
+                android:id="@+id/sourceIptvOrgNews"
+                style="@style/SettingsItemStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/source_iptv_org_news"
+                    style="@style/TextStyle.Body" />
+
+                <TextView
+                    android:id="@+id/sourceIptvOrgNewsStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextStyle.Caption" />
+            </LinearLayout>
+
+            <!-- Source: World IPTV -->
+            <LinearLayout
+                android:id="@+id/sourceWorldIptv"
+                style="@style/SettingsItemStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/source_world_iptv"
+                    style="@style/TextStyle.Body" />
+
+                <TextView
+                    android:id="@+id/sourceWorldIptvStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    style="@style/TextStyle.Caption" />
+            </LinearLayout>
+
+            <!-- Custom URL -->
+            <LinearLayout
+                android:id="@+id/sourceCustom"
+                style="@style/SettingsItemStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="start|center_vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/custom_url"
+                    style="@style/TextStyle.Body" />
+
+                <EditText
+                    android:id="@+id/customUrlInput"
+                    android:layout_width="@dimen/search_bar_width"
+                    android:layout_height="@dimen/search_bar_height"
+                    android:layout_marginTop="8dp"
+                    android:hint="https://example.com/playlist.m3u"
+                    android:textColor="@color/text_primary"
+                    android:textColorHint="@color/text_tertiary"
+                    android:background="@drawable/bg_channel_card"
+                    android:padding="12dp"
+                    android:inputType="textUri"
+                    android:maxLines="1"
+                    android:textSize="@dimen/text_body" />
+            </LinearLayout>
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/card_dark"
+                android:layout_marginTop="@dimen/section_spacing"
+                android:layout_marginBottom="@dimen/section_spacing" />
+
+            <!-- Refresh button -->
+            <TextView
+                android:id="@+id/refreshButton"
+                style="@style/SettingsItemStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/refresh"
+                android:textColor="@color/accent"
+                android:textSize="@dimen/text_body" />
+
+            <!-- Last updated info -->
+            <TextView
+                android:id="@+id/lastUpdated"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_padding_horizontal"
+                android:layout_marginTop="8dp"
+                style="@style/TextStyle.Caption" />
+
+            <!-- Channel count -->
+            <TextView
+                android:id="@+id/channelCount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_padding_horizontal"
+                android:layout_marginTop="4dp"
+                style="@style/TextStyle.Caption" />
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

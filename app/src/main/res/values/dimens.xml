@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Margins and padding -->
+    <dimen name="screen_padding_horizontal">48dp</dimen>
+    <dimen name="screen_padding_vertical">32dp</dimen>
+    <dimen name="section_spacing">24dp</dimen>
+    <dimen name="card_spacing">12dp</dimen>
+    <dimen name="card_inner_padding">12dp</dimen>
+
+    <!-- Channel card dimensions -->
+    <dimen name="card_width">180dp</dimen>
+    <dimen name="card_height">120dp</dimen>
+    <dimen name="card_logo_size">64dp</dimen>
+    <dimen name="card_corner_radius">8dp</dimen>
+
+    <!-- Hero card (featured) -->
+    <dimen name="hero_card_width">280dp</dimen>
+    <dimen name="hero_card_height">160dp</dimen>
+
+    <!-- Focus ring -->
+    <dimen name="focus_ring_width">3dp</dimen>
+
+    <!-- Text sizes (readable from couch distance) -->
+    <dimen name="text_heading">24sp</dimen>
+    <dimen name="text_subheading">18sp</dimen>
+    <dimen name="text_body">16sp</dimen>
+    <dimen name="text_caption">14sp</dimen>
+    <dimen name="text_small">12sp</dimen>
+
+    <!-- Player overlay -->
+    <dimen name="player_overlay_padding">32dp</dimen>
+    <dimen name="player_channel_name_size">28sp</dimen>
+    <dimen name="player_info_size">18sp</dimen>
+
+    <!-- Navigation bar -->
+    <dimen name="nav_height">56dp</dimen>
+    <dimen name="nav_icon_size">24dp</dimen>
+
+    <!-- Search -->
+    <dimen name="search_bar_height">48dp</dimen>
+    <dimen name="search_bar_width">400dp</dimen>
+
+    <!-- Settings -->
+    <dimen name="settings_item_height">56dp</dimen>
+</resources>

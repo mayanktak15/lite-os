@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Background circle -->
+    <path
+        android:fillColor="#FF00BFA5"
+        android:pathData="M54,54m-50,0a50,50 0,1 1,100 0a50,50 0,1 1,-100 0" />
+    <!-- TV icon -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M30,34h48c2,0 3.5,1.5 3.5,3.5v30c0,2 -1.5,3.5 -3.5,3.5H30c-2,0 -3.5,-1.5 -3.5,-3.5v-30c0,-2 1.5,-3.5 3.5,-3.5zM32,39v27h44V39H32zM44,76h20v3H44z" />
+    <!-- Play icon -->
+    <path
+        android:fillColor="#FF00BFA5"
+        android:pathData="M47,46l16,7.5l-16,7.5z" />
+</vector>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="96"
+    android:viewportHeight="96">
+    <!-- Placeholder TV icon for channels without logos -->
+    <path
+        android:fillColor="#66FFFFFF"
+        android:pathData="M16,20h64c2.2,0 4,1.8 4,4v40c0,2.2 -1.8,4 -4,4H16c-2.2,0 -4,-1.8 -4,-4V24c0,-2.2 1.8,-4 4,-4zM18,26v36h60V26H18zM36,72h24v4H36z" />
+    <path
+        android:fillColor="#4400BFA5"
+        android:pathData="M40,36l20,12l-20,12z" />
+</vector>

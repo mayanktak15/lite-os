@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "minAppVersion": "1.0.0",
+  "theme": {
+    "backgroundColor": "#0D0D0D",
+    "cardColor": "#242424",
+    "accentColor": "#00BFA5",
+    "textColor": "#FFFFFF"
+  },
+  "sections": [
+    {
+      "id": "featured",
+      "type": "hero_row",
+      "title": "Featured Channels",
+      "visible": true,
+      "order": 0,
+      "channelIds": [
+        "NDTVIndia",
+        "RepublicTV"
+      ]
+    },
+    {
+      "id": "news",
+      "type": "channel_row",
+      "title": "News Channels",
+      "visible": true,
+      "order": 1,
+      "category": "News"
+    },
+    {
+      "id": "entertainment",
+      "type": "channel_row",
+      "title": "Entertainment",
+      "visible": true,
+      "order": 2,
+      "category": "Entertainment"
+    }
+  ],
+  "navigation": [
+    "home",
+    "search",
+    "settings"
+  ],
+  "playlistSources": [
+    {
+      "id": "sample_local",
+      "label": "Sample Local Playlist",
+      "url": "file:///test-fixtures/sample.m3u"
+    },
+    {
+      "id": "iptv_org_in",
+      "label": "IPTV-Org India",
+      "url": "https://iptv-org.github.io/iptv/countries/in.m3u"
+    }
+  ],
+  "refreshIntervalMinutes": 60
+}

@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "minAppVersion": "1.0.0",
+  "theme": {
+    "backgroundColor": "#0D0D0D",
+    "cardColor": "#242424",
+    "accentColor": "#00BFA5",
+    "textColor": "#FFFFFF"
+  },
+  "sections": [
+    {
+      "id": "featured",
+      "type": "hero_row",
+      "title": "⭐ Featured Channels",
+      "visible": true,
+      "order": 0,
+      "channelIds": []
+    },
+    {
+      "id": "news",
+      "type": "channel_row",
+      "title": "📰 News",
+      "visible": true,
+      "order": 1,
+      "category": "News"
+    },
+    {
+      "id": "entertainment",
+      "type": "channel_row",
+      "title": "🎬 Entertainment",
+      "visible": true,
+      "order": 2,
+      "category": "Entertainment"
+    },
+    {
+      "id": "sports",
+      "type": "channel_row",
+      "title": "⚽ Sports",
+      "visible": true,
+      "order": 3,
+      "category": "Sports"
+    },
+    {
+      "id": "movies",
+      "type": "channel_row",
+      "title": "🎥 Movies",
+      "visible": true,
+      "order": 4,
+      "category": "Movies"
+    },
+    {
+      "id": "music",
+      "type": "channel_row",
+      "title": "🎵 Music",
+      "visible": true,
+      "order": 5,
+      "category": "Music"
+    },
+    {
+      "id": "kids",
+      "type": "channel_row",
+      "title": "🧒 Kids",
+      "visible": true,
+      "order": 6,
+      "category": "Kids"
+    },
+    {
+      "id": "regional",
+      "type": "channel_row",
+      "title": "🌏 Regional",
+      "visible": true,
+      "order": 7,
+      "category": "Regional"
+    },
+    {
+      "id": "all_channels",
+      "type": "channel_row",
+      "title": "📺 All Channels",
+      "visible": true,
+      "order": 8
+    }
+  ],
+  "navigation": ["home", "search", "settings"],
+  "playlistSources": [
+    {
+      "id": "iptv_org_india",
+      "label": "IPTV-Org India",
+      "url": "https://iptv-org.github.io/iptv/countries/in.m3u"
+    },
+    {
+      "id": "iptv_org_news",
+      "label": "IPTV-Org News",
+      "url": "https://iptv-org.github.io/iptv/categories/news.m3u"
+    },
+    {
+      "id": "world_iptv",
+      "label": "World IPTV",
+      "url": "https://romaxa55.github.io/world_ip_tv/output/index.m3u"
+    }
+  ],
+  "refreshIntervalMinutes": 60
+}

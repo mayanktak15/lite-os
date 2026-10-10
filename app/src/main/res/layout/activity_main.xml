@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rootContainer"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_dark">
+
+    <!-- Main content area - sections rendered by SDUI -->
+    <LinearLayout
+        android:id="@+id/contentContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- Top navigation bar -->
+        <LinearLayout
+            android:id="@+id/navBar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/nav_height"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingStart="@dimen/screen_padding_horizontal"
+            android:paddingEnd="@dimen/screen_padding_horizontal"
+            android:background="@color/surface_dark">
+
+            <TextView
+                android:id="@+id/appTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/app_name"
+                style="@style/TextStyle.Heading"
+                android:textColor="@color/accent" />
+
+            <TextView
+                android:id="@+id/navSearch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/search_hint"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                style="@style/TextStyle.Body" />
+
+            <TextView
+                android:id="@+id/navSettings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/settings"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                style="@style/TextStyle.Body" />
+        </LinearLayout>
+
+        <!-- Scrollable sections container -->
+        <ScrollView
+            android:id="@+id/sectionsScroll"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="none"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:id="@+id/sectionsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="@dimen/section_spacing"
+                android:paddingBottom="@dimen/section_spacing"
+                android:clipToPadding="false" />
+        </ScrollView>
+    </LinearLayout>
+
+    <!-- Loading state -->
+    <include
+        android:id="@+id/loadingView"
+        layout="@layout/view_loading"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Error state -->
+    <include
+        android:id="@+id/errorView"
+        layout="@layout/view_error"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone" />
+
+</FrameLayout>
