@@ -52,10 +52,26 @@ A full native Android application stack has been designed, implemented, and veri
 - **Bounded LRU Bitmap Cache**: [ImageCache.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/cache/ImageCache.kt) capped at 20 channel logos, downsampling bitmaps to 96×96 using `RGB_565` (50% memory savings vs `ARGB_8888`).
 - **Standard Heap Operation**: Configured `largeHeap="false"` in manifest to ensure the application runs reliably within a strict ~60 MB memory ceiling.
 
-### 7. Automated Testing & Verification
-- Comprehensive unit tests:
-  - [M3uParserTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/iptv/M3uParserTest.kt) validates full tag parsing, metadata fallback, duplicate deduplication, scheme filtering, and empty inputs.
-  - [SduiConfigParserTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/sdui/SduiConfigParserTest.kt) validates schema deserialization, theme parsing, section lists, and error tolerance.
+### 7. Automatic Updates & Server-Driven Configuration Architecture
+- **Incremental Conditional Syncing**: Implemented in [HttpClient.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/network/HttpClient.kt) using standard HTTP `ETag` (`If-None-Match`) and `Last-Modified` (`If-Modified-Since`) headers. If neither the playlist nor configuration has changed, the server returns `304 Not Modified`, saving network bandwidth, CPU cycles, and memory allocations.
+- **Atomic Cache & Rollback**: [DiskCache.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/cache/DiskCache.kt) writes all downloads to temporary files first with `fsync`, atomically renaming them upon successful completion. Preserves `.bak` snapshots of the last known-good files, enabling instantaneous rollback if remote data fails validation or power is abruptly interrupted.
+- **Granular Catalogue Diffing**: [CatalogueDiff.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/iptv/CatalogueDiff.kt) computes additions, removals, renames, category shifts, and logo updates across catalogue revisions.
+- **Synchronized Live Search Index**: [ChannelSearchIndex.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/iptv/ChannelSearchIndex.kt) maintains a zero-allocation, thread-safe token index matching channel names, groups, and prefixes. Re-indexes automatically whenever the underlying catalogue updates and connects directly to the TV-optimized [SearchDialog.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/iptv/SearchDialog.kt).
+- **Native Android Binary Updates**: [AppUpdateManager.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/update/AppUpdateManager.kt) clearly distinguishes content/SDUI updates from native application binary updates. For binary updates, it validates HTTPS endpoints, verifies SHA-256 cryptographic signatures, checks `canRequestPackageInstalls()`, and triggers standard Android `PackageInstaller` via `FileProvider` with user consent. Never bypasses Android security controls or runs remote executable code.
+- **Background Periodic Syncing**: [UpdateSyncScheduler.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/update/UpdateSyncScheduler.kt) and [UpdateSyncJobService.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/update/UpdateSyncJobService.kt) schedule periodic checks with Android's native `JobScheduler` without adding external library bloat. Playback lifecycle is monitored in [PlayerActivity.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/PlayerActivity.kt) to ensure background updates never interrupt active video streams.
+- **Diagnostic Inspection**: [SettingsActivity.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/SettingsActivity.kt) displays real-time sync results, catalogue diff counters, active source URLs, SDUI config status, and manual update checks.
+
+### 8. Automated Testing & Verification
+- Comprehensive unit test suites covering the entire update and configuration pipeline:
+  - [M3uParserTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/iptv/M3uParserTest.kt): Tag extraction, deduplication, stream sanitization.
+  - [CatalogueDiffTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/iptv/CatalogueDiffTest.kt): Channel additions, deletions, renames, and recategorizations.
+  - [ChannelSearchIndexTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/iptv/ChannelSearchIndexTest.kt): Token matching, accent normalization, instant catalogue reflection.
+  - [DiskCacheTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/cache/DiskCacheTest.kt): Atomic writes, rollback to `.bak`, SHA-256 integrity, metadata storage.
+  - [HttpClientTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/network/HttpClientTest.kt): URL validation, conditional headers, 304 handling.
+  - [SduiConfigParserTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/sdui/SduiConfigParserTest.kt): Schema versioning (v1, v2), feature flags, search config, app update parsing, unknown component rejection.
+  - [SduiConfigRepositoryTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/sdui/SduiConfigRepositoryTest.kt): Cache reading, fallback, and automatic rollback on corrupt remote configs.
+  - [AppUpdateManagerTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/update/AppUpdateManagerTest.kt): Soft vs mandatory updates, version comparisons, up-to-date checks.
+  - [PlaylistRepositoryTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/iptv/PlaylistRepositoryTest.kt): Offline startup, caching, search index synchronization.
 - All unit tests pass cleanly in Gradle (`./gradlew test`).
 - Debug APK successfully compiled (`app-debug.apk`, 16 MB).
 

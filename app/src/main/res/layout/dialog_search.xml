@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_dark"
+    android:padding="@dimen/screen_padding_horizontal">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Search Channels"
+            style="@style/TextStyle.Heading" />
+
+        <Button
+            android:id="@+id/searchCloseButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Close"
+            android:background="@drawable/bg_channel_card"
+            android:textColor="@color/text_primary"
+            android:focusable="true" />
+    </LinearLayout>
+
+    <EditText
+        android:id="@+id/searchInput"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/search_bar_height"
+        android:hint="@string/search_hint"
+        android:textColor="@color/text_primary"
+        android:textColorHint="@color/text_tertiary"
+        android:background="@drawable/bg_channel_card"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:imeOptions="actionSearch"
+        android:inputType="text"
+        android:maxLines="1"
+        android:focusable="true"
+        android:textSize="@dimen/text_body" />
+
+    <TextView
+        android:id="@+id/searchResultsCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="8dp"
+        android:textColor="@color/text_secondary"
+        android:text="Type a channel or category name to search"
+        style="@style/TextStyle.Caption" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/searchResultsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:scrollbars="vertical" />
+
+</LinearLayout>

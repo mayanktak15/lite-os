@@ -193,16 +193,19 @@ class PlayerActivity : AppCompatActivity(), PlayerManager.PlayerListener {
 
     override fun onStart() {
         super.onStart()
+        com.litetv.app.update.AppUpdateManager.isPlaybackActive = true
         playerManager.resume()
     }
 
     override fun onStop() {
         super.onStop()
+        com.litetv.app.update.AppUpdateManager.isPlaybackActive = false
         playerManager.pause()
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        com.litetv.app.update.AppUpdateManager.isPlaybackActive = false
         handler.removeCallbacksAndMessages(null)
         playerManager.release()
     }

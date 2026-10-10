@@ -98,5 +98,27 @@
       "url": "https://romaxa55.github.io/world_ip_tv/output/index.m3u"
     }
   ],
-  "refreshIntervalMinutes": 60
+  "refreshIntervalMinutes": 60,
+  "featureFlags": {
+    "search_enabled": true,
+    "channel_preview": false,
+    "auto_refresh_enabled": true
+  },
+  "searchConfig": {
+    "enabled": true,
+    "placeholder": "Search channels…",
+    "maxResults": 50
+  },
+  "appUpdate": {
+    "latestVersionCode": 1,
+    "latestVersionName": "1.0.0",
+    "minRequiredVersionCode": 1,
+    "updateUrl": "https://github.com/mayanktak15/lite-os/releases",
+    "apkDownloadUrl": "https://github.com/mayanktak15/lite-os/releases/download/v1.0.0/app-debug.apk",
+    "apkSha256": "",
+    "releaseNotes": "Initial release with SDUI, ExoPlayer HLS, and remote configuration.",
+    "forceUpdate": false
+  },
+  "cacheTtlMinutes": 60
 }
+

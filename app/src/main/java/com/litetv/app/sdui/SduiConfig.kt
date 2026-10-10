@@ -14,7 +14,11 @@ data class SduiConfig(
     val sections: List<Section>,
     val navigation: List<String>,
     val playlistSources: List<PlaylistSource>,
-    val refreshIntervalMinutes: Int
+    val refreshIntervalMinutes: Int,
+    val featureFlags: Map<String, Boolean> = emptyMap(),
+    val searchConfig: SearchConfig = SearchConfig(),
+    val appUpdate: AppUpdateConfig? = null,
+    val cacheTtlMinutes: Int = 60
 )
 
 /** Theme configuration — colors applied dynamically */
@@ -42,3 +46,25 @@ data class PlaylistSource(
     val label: String,
     val url: String
 )
+
+/** Remote search configuration */
+data class SearchConfig(
+    val enabled: Boolean = true,
+    val placeholder: String = "Search channels…",
+    val maxResults: Int = 50
+)
+
+/**
+ * Application binary update metadata delivered via SDUI configuration.
+ */
+data class AppUpdateConfig(
+    val latestVersionCode: Int,
+    val latestVersionName: String,
+    val minRequiredVersionCode: Int = 1,
+    val updateUrl: String,
+    val apkDownloadUrl: String? = null,
+    val apkSha256: String? = null,
+    val releaseNotes: String = "",
+    val forceUpdate: Boolean = false
+)
+

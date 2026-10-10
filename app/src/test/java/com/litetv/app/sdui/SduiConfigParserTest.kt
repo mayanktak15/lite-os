@@ -1,6 +1,7 @@
 package com.litetv.app.sdui
 
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -44,7 +45,27 @@ class SduiConfigParserTest {
               "url": "https://example.com/playlist.m3u"
             }
           ],
-          "refreshIntervalMinutes": 120
+          "refreshIntervalMinutes": 120,
+          "featureFlags": {
+            "search_enabled": true,
+            "channel_preview": false
+          },
+          "searchConfig": {
+            "enabled": true,
+            "placeholder": "Find your stream…",
+            "maxResults": 30
+          },
+          "appUpdate": {
+            "latestVersionCode": 2,
+            "latestVersionName": "1.1.0",
+            "minRequiredVersionCode": 1,
+            "updateUrl": "https://example.com/releases",
+            "apkDownloadUrl": "https://example.com/app-release.apk",
+            "apkSha256": "abcdef123456",
+            "releaseNotes": "Performance improvements",
+            "forceUpdate": false
+          },
+          "cacheTtlMinutes": 90
         }
     """.trimIndent()
 
@@ -55,6 +76,7 @@ class SduiConfigParserTest {
         assertEquals(1, config!!.schemaVersion)
         assertEquals("1.0.0", config.minAppVersion)
         assertEquals(120, config.refreshIntervalMinutes)
+        assertEquals(90, config.cacheTtlMinutes)
 
         // Theme
         assertEquals("#121212", config.theme.backgroundColor)
@@ -82,6 +104,37 @@ class SduiConfigParserTest {
         assertEquals(1, config.playlistSources.size)
         assertEquals("Primary Source", config.playlistSources[0].label)
         assertEquals("https://example.com/playlist.m3u", config.playlistSources[0].url)
+
+        // Feature flags
+        assertEquals(true, config.featureFlags["search_enabled"])
+        assertEquals(false, config.featureFlags["channel_preview"])
+
+        // Search config
+        assertEquals(true, config.searchConfig.enabled)
+        assertEquals("Find your stream…", config.searchConfig.placeholder)
+        assertEquals(30, config.searchConfig.maxResults)
+
+        // App update
+        assertNotNull(config.appUpdate)
+        assertEquals(2, config.appUpdate!!.latestVersionCode)
+        assertEquals("1.1.0", config.appUpdate!!.latestVersionName)
+        assertEquals("https://example.com/app-release.apk", config.appUpdate!!.apkDownloadUrl)
+        assertEquals("abcdef123456", config.appUpdate!!.apkSha256)
+        assertEquals("Performance improvements", config.appUpdate!!.releaseNotes)
+        assertFalse(config.appUpdate!!.forceUpdate)
+    }
+
+    @Test
+    fun parse_schemaVersion2_supported() {
+        val v2Json = """
+            {
+              "schemaVersion": 2,
+              "sections": []
+            }
+        """.trimIndent()
+        val config = SduiConfigParser.parse(v2Json)
+        assertNotNull(config)
+        assertEquals(2, config!!.schemaVersion)
     }
 
     @Test

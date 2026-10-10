@@ -172,6 +172,67 @@
                 android:layout_marginTop="4dp"
                 style="@style/TextStyle.Caption" />
 
+            <!-- Diff summary -->
+            <TextView
+                android:id="@+id/diffSummary"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_padding_horizontal"
+                android:layout_marginTop="4dp"
+                style="@style/TextStyle.Caption" />
+
+            <!-- Config status -->
+            <TextView
+                android:id="@+id/configStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_padding_horizontal"
+                android:layout_marginTop="4dp"
+                style="@style/TextStyle.Caption" />
+
+            <!-- Divider -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/card_dark"
+                android:layout_marginTop="@dimen/section_spacing"
+                android:layout_marginBottom="@dimen/section_spacing" />
+
+            <!-- App Updates Section -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Application Updates"
+                android:layout_marginStart="@dimen/screen_padding_horizontal"
+                android:layout_marginBottom="12dp"
+                style="@style/TextStyle.Subheading" />
+
+            <TextView
+                android:id="@+id/checkUpdatesButton"
+                style="@style/SettingsItemStyle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Check for Application Updates"
+                android:textColor="@color/accent"
+                android:textSize="@dimen/text_body" />
+
+            <TextView
+                android:id="@+id/appVersionText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_padding_horizontal"
+                android:layout_marginTop="8dp"
+                style="@style/TextStyle.Caption" />
+
+            <TextView
+                android:id="@+id/updateStatusText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/screen_padding_horizontal"
+                android:layout_marginTop="4dp"
+                style="@style/TextStyle.Caption" />
+
         </LinearLayout>
     </ScrollView>
 </LinearLayout>
+

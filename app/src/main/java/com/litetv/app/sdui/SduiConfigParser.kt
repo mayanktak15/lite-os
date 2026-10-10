@@ -5,26 +5,31 @@ import org.json.JSONArray
 import org.json.JSONObject
 
 /**
- * Parses SDUI JSON configuration into [SduiConfig] data classes.
- * Uses built-in org.json — no Gson/Moshi dependency.
- * Validates structure and fails safely on malformed data.
+ * Parses and validates SDUI JSON configuration into [SduiConfig] data models.
+ *
+ * Security and reliability principles:
+ * - Uses Android's built-in org.json (zero heavy external parser dependencies)
+ * - Strict schema versioning (supported schema versions: 1, 2)
+ * - Strict component whitelisting (only known UI component types rendered)
+ * - Safe degradation: missing or unknown attributes fall back gracefully
+ * - Rejects any executable code, arbitrary classes, or script constructs
  */
 object SduiConfigParser {
 
     private const val TAG = "SduiConfigParser"
-    private const val SUPPORTED_SCHEMA_VERSION = 1
+    val SUPPORTED_SCHEMA_VERSIONS = setOf(1, 2)
 
     /**
      * Parse a JSON string into an [SduiConfig].
-     * Returns null if parsing fails or schema is unsupported.
+     * Returns null if parsing fails, json is malformed, or schema version is unsupported.
      */
     fun parse(jsonString: String): SduiConfig? {
         return try {
             val json = JSONObject(jsonString)
             val schemaVersion = json.optInt("schemaVersion", -1)
 
-            if (schemaVersion != SUPPORTED_SCHEMA_VERSION) {
-                Log.w(TAG, "Unsupported schema version: $schemaVersion")
+            if (schemaVersion !in SUPPORTED_SCHEMA_VERSIONS) {
+                Log.w(TAG, "Unsupported or missing schema version: $schemaVersion (supported: $SUPPORTED_SCHEMA_VERSIONS)")
                 return null
             }
 
@@ -35,7 +40,11 @@ object SduiConfigParser {
                 sections = parseSections(json.optJSONArray("sections")),
                 navigation = parseStringList(json.optJSONArray("navigation")),
                 playlistSources = parsePlaylistSources(json.optJSONArray("playlistSources")),
-                refreshIntervalMinutes = json.optInt("refreshIntervalMinutes", 60)
+                refreshIntervalMinutes = json.optInt("refreshIntervalMinutes", 60),
+                featureFlags = parseFeatureFlags(json.optJSONObject("featureFlags")),
+                searchConfig = parseSearchConfig(json.optJSONObject("searchConfig") ?: json.optJSONObject("search")),
+                appUpdate = parseAppUpdate(json.optJSONObject("appUpdate")),
+                cacheTtlMinutes = json.optInt("cacheTtlMinutes", 60)
             )
         } catch (e: Exception) {
             Log.e(TAG, "Failed to parse SDUI config", e)
@@ -92,7 +101,7 @@ object SduiConfigParser {
         for (i in 0 until jsonArray.length()) {
             val obj = jsonArray.optJSONObject(i) ?: continue
             val url = obj.optString("url", "")
-            if (url.isEmpty() || !url.startsWith("https://")) {
+            if (url.isEmpty() || (!url.startsWith("https://") && !url.startsWith("http://"))) {
                 Log.w(TAG, "Skipping playlist source with invalid URL: $url")
                 continue
             }
@@ -119,6 +128,49 @@ object SduiConfigParser {
         return list
     }
 
+    private fun parseFeatureFlags(json: JSONObject?): Map<String, Boolean> {
+        if (json == null) return emptyMap()
+        val flags = mutableMapOf<String, Boolean>()
+        val keys = json.keys()
+        while (keys.hasNext()) {
+            val key = keys.next()
+            flags[key] = json.optBoolean(key, false)
+        }
+        return flags
+    }
+
+    private fun parseSearchConfig(json: JSONObject?): SearchConfig {
+        if (json == null) return SearchConfig()
+        return SearchConfig(
+            enabled = json.optBoolean("enabled", true),
+            placeholder = json.optString("placeholder", "Search channels…"),
+            maxResults = json.optInt("maxResults", 50).coerceIn(5, 200)
+        )
+    }
+
+    private fun parseAppUpdate(json: JSONObject?): AppUpdateConfig? {
+        if (json == null) return null
+        val latestVersionCode = json.optInt("latestVersionCode", -1)
+        val latestVersionName = json.optString("latestVersionName", "")
+        val updateUrl = json.optString("updateUrl", "")
+
+        if (latestVersionCode <= 0 || updateUrl.isEmpty()) {
+            Log.w(TAG, "Incomplete appUpdate config, skipping")
+            return null
+        }
+
+        return AppUpdateConfig(
+            latestVersionCode = latestVersionCode,
+            latestVersionName = latestVersionName,
+            minRequiredVersionCode = json.optInt("minRequiredVersionCode", 1),
+            updateUrl = updateUrl,
+            apkDownloadUrl = json.optString("apkDownloadUrl", "").takeIf { it.startsWith("https://") },
+            apkSha256 = json.optString("apkSha256", "").takeIf { it.isNotEmpty() },
+            releaseNotes = json.optString("releaseNotes", ""),
+            forceUpdate = json.optBoolean("forceUpdate", false)
+        )
+    }
+
     private fun defaultPlaylistSources() = listOf(
         PlaylistSource("iptv_org_india", "IPTV-Org India", "https://iptv-org.github.io/iptv/countries/in.m3u"),
         PlaylistSource("iptv_org_news", "IPTV-Org News", "https://iptv-org.github.io/iptv/categories/news.m3u"),
@@ -126,7 +178,7 @@ object SduiConfigParser {
     )
 
     /** Known component types that the renderer supports */
-    private val KNOWN_COMPONENT_TYPES = setOf(
+    val KNOWN_COMPONENT_TYPES = setOf(
         "hero_row",
         "channel_row",
         "category_grid",
@@ -136,3 +188,4 @@ object SduiConfigParser {
         "empty"
     )
 }
+

@@ -1,21 +1,24 @@
 package com.litetv.app
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.litetv.app.iptv.PlaylistRepository
+import com.litetv.app.sdui.SduiConfigRepository
+import com.litetv.app.update.AppUpdateManager
+import com.litetv.app.update.AppUpdateStatus
 import kotlinx.coroutines.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 /**
- * Settings screen for playlist source management.
+ * Settings screen for playlist source management and update diagnostics.
  * Allows selecting pre-configured sources, entering a custom URL,
- * refreshing the playlist, and viewing status.
+ * refreshing the playlist, inspecting catalogue diffs, and checking app binary updates.
  */
 class SettingsActivity : AppCompatActivity() {
 
@@ -29,9 +32,16 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private lateinit var playlistRepository: PlaylistRepository
+    private lateinit var configRepository: SduiConfigRepository
+    private lateinit var updateManager: AppUpdateManager
+
     private lateinit var customUrlInput: EditText
     private lateinit var lastUpdatedText: TextView
     private lateinit var channelCountText: TextView
+    private lateinit var diffSummaryText: TextView
+    private lateinit var configStatusText: TextView
+    private lateinit var appVersionText: TextView
+    private lateinit var updateStatusText: TextView
 
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
@@ -40,12 +50,20 @@ class SettingsActivity : AppCompatActivity() {
         setContentView(R.layout.activity_settings)
 
         playlistRepository = PlaylistRepository(this)
+        configRepository = SduiConfigRepository(this)
+        updateManager = AppUpdateManager(this)
+
         customUrlInput = findViewById(R.id.customUrlInput)
         lastUpdatedText = findViewById(R.id.lastUpdated)
         channelCountText = findViewById(R.id.channelCount)
+        diffSummaryText = findViewById(R.id.diffSummary)
+        configStatusText = findViewById(R.id.configStatus)
+        appVersionText = findViewById(R.id.appVersionText)
+        updateStatusText = findViewById(R.id.updateStatusText)
 
         setupSourceButtons()
         setupRefreshButton()
+        setupAppUpdateSection()
         updateStatusDisplay()
     }
 
@@ -81,6 +99,15 @@ class SettingsActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupAppUpdateSection() {
+        appVersionText.text = "Installed: v${updateManager.currentVersionName} (Build ${updateManager.currentVersionCode})"
+        updateStatusText.text = "Status: Up to date"
+
+        findViewById<View>(R.id.checkUpdatesButton)?.setOnClickListener {
+            checkForAppUpdates()
+        }
+    }
+
     private fun selectSource(url: String, name: String) {
         scope.launch {
             Toast.makeText(this@SettingsActivity, "Switching to $name…", Toast.LENGTH_SHORT).show()
@@ -97,12 +124,60 @@ class SettingsActivity : AppCompatActivity() {
 
     private fun refreshPlaylist() {
         scope.launch {
-            Toast.makeText(this@SettingsActivity, "Refreshing…", Toast.LENGTH_SHORT).show()
-            val success = playlistRepository.refresh()
-            if (success) {
-                Toast.makeText(this@SettingsActivity, "Refreshed: ${playlistRepository.channels.size} channels", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@SettingsActivity, "Refreshing playlist…", Toast.LENGTH_SHORT).show()
+            val result = playlistRepository.syncCatalogue(force = true)
+            if (result.success) {
+                Toast.makeText(
+                    this@SettingsActivity,
+                    "Catalogue updated: ${playlistRepository.channels.size} channels",
+                    Toast.LENGTH_SHORT
+                ).show()
             } else {
-                Toast.makeText(this@SettingsActivity, "Refresh failed", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@SettingsActivity, "Refresh failed: ${result.message}", Toast.LENGTH_SHORT).show()
+            }
+            updateStatusDisplay()
+        }
+    }
+
+    private fun checkForAppUpdates() {
+        scope.launch {
+            Toast.makeText(this@SettingsActivity, "Checking for updates…", Toast.LENGTH_SHORT).show()
+            val config = withContext(Dispatchers.IO) {
+                configRepository.fetchRemoteConfig() ?: configRepository.getCachedOrDefault()
+            }
+
+            val status = updateManager.checkUpdate(config.appUpdate)
+            when (status) {
+                is AppUpdateStatus.UpdateAvailable -> {
+                    updateStatusText.text = "Status: New version available (v${status.config.latestVersionName})"
+                    AlertDialog.Builder(this@SettingsActivity)
+                        .setTitle("Update Available")
+                        .setMessage("Lite TV v${status.config.latestVersionName} is available.\n\n${status.config.releaseNotes}")
+                        .setPositiveButton("Update Now") { _, _ ->
+                            if (!status.config.apkDownloadUrl.isNullOrEmpty()) {
+                                scope.launch {
+                                    Toast.makeText(this@SettingsActivity, "Downloading update…", Toast.LENGTH_SHORT).show()
+                                    val dlResult = updateManager.downloadAndInstallApk(this@SettingsActivity, status.config)
+                                    if (dlResult.isFailure) {
+                                        Toast.makeText(this@SettingsActivity, "Download failed, opening browser…", Toast.LENGTH_SHORT).show()
+                                        updateManager.openUpdateChannel(this@SettingsActivity, status.config.updateUrl)
+                                    }
+                                }
+                            } else {
+                                updateManager.openUpdateChannel(this@SettingsActivity, status.config.updateUrl)
+                            }
+                        }
+                        .setNegativeButton("Cancel", null)
+                        .show()
+                }
+                is AppUpdateStatus.UpToDate -> {
+                    updateStatusText.text = "Status: Up to date"
+                    Toast.makeText(this@SettingsActivity, "Lite TV is up to date!", Toast.LENGTH_SHORT).show()
+                }
+                is AppUpdateStatus.Error -> {
+                    updateStatusText.text = "Status: Check failed"
+                    Toast.makeText(this@SettingsActivity, "Update check failed: ${status.message}", Toast.LENGTH_SHORT).show()
+                }
             }
             updateStatusDisplay()
         }
@@ -119,6 +194,10 @@ class SettingsActivity : AppCompatActivity() {
 
         val count = playlistRepository.channels.size
         channelCountText.text = getString(R.string.channel_count, count)
+
+        // Diff & Config Diagnostics
+        diffSummaryText.text = "Last Sync Diff: ${playlistRepository.lastDiffSummary}"
+        configStatusText.text = "SDUI Config: ${configRepository.lastSyncStatus}"
     }
 
     private fun updateAllSourceHighlights() {
@@ -133,7 +212,7 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun updateSourceHighlight(viewId: Int, sourceUrl: String) {
-        val view = findViewById<View>(viewId) ?: return
+        if (findViewById<View>(viewId) == null) return
         val statusView = when (viewId) {
             R.id.sourceIptvOrgIndia -> findViewById<TextView>(R.id.sourceIptvOrgIndiaStatus)
             R.id.sourceIptvOrgNews -> findViewById<TextView>(R.id.sourceIptvOrgNewsStatus)
@@ -154,3 +233,4 @@ class SettingsActivity : AppCompatActivity() {
         scope.cancel()
     }
 }
+
