@@ -96,19 +96,35 @@ class MainActivity : AppCompatActivity() {
                 // Step 2: Show initial UI with config (may show empty sections)
                 renderConfig(config, emptyList())
 
+                // Asynchronously fetch remote SDUI config in background
+                launch(Dispatchers.IO) {
+                    try {
+                        val remoteConfig = configRepository.fetchRemoteConfig()
+                        if (remoteConfig != null && remoteConfig != currentConfig) {
+                            withContext(Dispatchers.Main) {
+                                currentConfig = remoteConfig
+                                renderConfig(remoteConfig, playlistRepository.channels)
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.w(TAG, "Background remote config update failed", e)
+                    }
+                }
+
                 // Step 3: Load playlist in background
                 val loaded = playlistRepository.loadChannels()
+                val activeConfig = currentConfig ?: config
                 if (loaded) {
                     // Step 4: Re-render with real channel data
-                    renderConfig(config, playlistRepository.channels)
+                    renderConfig(activeConfig, playlistRepository.channels)
                     showContent()
                 } else if (playlistRepository.channels.isEmpty()) {
                     // No channels from cache or remote
                     showContent()
-                    renderConfig(config, emptyList())
+                    renderConfig(activeConfig, emptyList())
                 } else {
                     // Cache had data even if remote failed
-                    renderConfig(config, playlistRepository.channels)
+                    renderConfig(activeConfig, playlistRepository.channels)
                     showContent()
                 }
 

@@ -261,17 +261,104 @@ adb shell getprop ro.build.version.release
 
 ---
 
+## Environment Configuration (`.env`)
+
+Lite TV supports configuring the remote Server-Driven UI endpoint at build time via an environment variable without modifying source code.
+
+### 1. The Configuration Variable
+
+| Variable Name | Description | Default Fallback Value |
+|---|---|---|
+| `LITE_TV_REMOTE_CONFIG_URL` | Public HTTPS endpoint hosting the SDUI configuration JSON | `https://mayanktak15.github.io/lite-os/config.json` |
+
+> [!NOTE]
+> `LITE_TV_REMOTE_CONFIG_URL` is a public configuration endpoint. Private environment variables, tokens, or credentials are never exposed via `BuildConfig`, resources, logs, or compiled APKs. Local `.env` files are ignored by git (`.gitignore`).
+
+### 2. How to Configure Locally
+
+#### Option A: Local `.env` File (Recommended for Development)
+Copy the provided `.env.example` template:
+```bash
+cp .env.example .env
+```
+Edit `.env` to point to your custom SDUI JSON endpoint:
+```dotenv
+LITE_TV_REMOTE_CONFIG_URL=https://your-custom-domain.pages.dev/config.json
+```
+
+#### Option B: Shell Environment Variable
+Export the variable in your current terminal session or pass it directly to Gradle:
+```bash
+export LITE_TV_REMOTE_CONFIG_URL="https://your-custom-domain.pages.dev/config.json"
+./gradlew assembleDebug
+```
+Or inline:
+```bash
+LITE_TV_REMOTE_CONFIG_URL="https://your-custom-domain.pages.dev/config.json" ./gradlew assembleDebug
+```
+
+#### Option C: Gradle Command-Line Property
+```bash
+./gradlew assembleDebug -PLITE_TV_REMOTE_CONFIG_URL="https://your-custom-domain.pages.dev/config.json"
+```
+
+If the variable is absent, blank, or consists only of whitespace, the build automatically preserves the safe default: `https://mayanktak15.github.io/lite-os/config.json`.
+
+---
+
+### 3. Build the Application
+
+Build the debug APK:
+```bash
+./gradlew assembleDebug
+```
+Or build the release APK:
+```bash
+./gradlew assembleRelease
+```
+
+---
+
+### 4. How to Verify Which Public Config URL the App Uses
+
+You can verify the configured URL through three independent methods:
+
+#### Method 1: Inspect Generated `BuildConfig`
+Check the generated build config source file:
+```bash
+grep "LITE_TV_REMOTE_CONFIG_URL" app/build/generated/source/buildConfig/debug/com/litetv/app/BuildConfig.java
+```
+Expected output:
+```java
+  public static final String LITE_TV_REMOTE_CONFIG_URL = "https://mayanktak15.github.io/lite-os/config.json";
+```
+
+#### Method 2: Inspect Compiled APK Binary
+Verify that the URL string was embedded into the compiled APK:
+```bash
+strings app/build/outputs/apk/debug/app-debug.apk | grep "config.json"
+```
+
+#### Method 3: Runtime Verification via Logcat
+When the application runs on a device or emulator, [SduiConfigRepository.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/sdui/SduiConfigRepository.kt) logs the target URL when fetching:
+```bash
+adb logcat -s SduiConfigRepo:*
+```
+Log output:
+```text
+D/SduiConfigRepo: Fetching remote SDUI config from: https://mayanktak15.github.io/lite-os/config.json
+```
+
+---
+
 ## Updating the UI Remotely (SDUI)
 
 The app UI layout, sections, categories, and sources can be updated remotely without releasing a new APK.
 
-1. Edit [sdui/config.json](file:///home/linus/Desktop/tv/sdui/config.json).
-2. Host the JSON file on any HTTPS endpoint (e.g. Cloudflare Pages, GitHub Pages, or AWS S3):
-   ```
-   https://your-domain.pages.dev/config.json
-   ```
-3. Update the remote config URL in [SduiConfigRepository.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/sdui/SduiConfigRepository.kt) (`REMOTE_CONFIG_URL`).
-4. Lite TV will fetch and apply the updated schema on next launch, while retaining offline disk cache for instant startup.
+1. Edit [docs/config.json](file:///home/linus/Desktop/tv/docs/config.json) or [sdui/config.json](file:///home/linus/Desktop/tv/sdui/config.json).
+2. Host the JSON file on any HTTPS endpoint (e.g. GitHub Pages at `https://mayanktak15.github.io/lite-os/config.json`, Cloudflare Pages, or AWS S3).
+3. If using a custom endpoint, specify it via `LITE_TV_REMOTE_CONFIG_URL` in `.env`.
+4. Lite TV loads bundled/cached configurations instantly on startup, fetches the latest remote schema asynchronously in the background, and caches valid updates to disk.
 
 ---
 
@@ -279,9 +366,10 @@ The app UI layout, sections, categories, and sources can be updated remotely wit
 
 ```
 tv/
+├── .env.example                       # Development environment variable template
 ├── app/
-│   ├── build.gradle.kts                   # Dependencies & build configuration
-│   ├── proguard-rules.pro                 # Release code shrinking & R8 rules
+│   ├── build.gradle.kts               # Dependencies, BuildConfig & .env configuration
+│   ├── proguard-rules.pro             # Release code shrinking & R8 rules
 │   └── src/
 │       ├── main/
 │       │   ├── AndroidManifest.xml        # TV Leanback & standard launcher configuration

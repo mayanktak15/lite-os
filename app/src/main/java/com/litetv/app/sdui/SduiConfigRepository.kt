@@ -2,6 +2,7 @@ package com.litetv.app.sdui
 
 import android.content.Context
 import android.util.Log
+import com.litetv.app.BuildConfig
 import com.litetv.app.R
 import com.litetv.app.cache.DiskCache
 import com.litetv.app.network.HttpClient
@@ -15,7 +16,10 @@ import kotlinx.coroutines.withContext
  * 3. Validate → apply & cache if valid
  * 4. Fall back to bundled default if no cache exists
  */
-class SduiConfigRepository(private val context: Context) {
+class SduiConfigRepository(
+    private val context: Context,
+    customRemoteUrl: String? = null
+) {
 
     private val diskCache = DiskCache(context)
 
@@ -23,9 +27,27 @@ class SduiConfigRepository(private val context: Context) {
         private const val TAG = "SduiConfigRepo"
         private const val CONFIG_CACHE_KEY = "sdui_config"
         private const val MAX_CONFIG_SIZE = 1024 * 1024 // 1 MB limit
-        // Default remote URL — can be overridden via config
-        private const val DEFAULT_REMOTE_URL = ""
+
+        /**
+         * Safe default remote URL if build-time configuration is absent or blank.
+         */
+        const val FALLBACK_REMOTE_URL = "https://mayanktak15.github.io/lite-os/config.json"
+
+        /**
+         * Resolved default remote URL read from BuildConfig (configured via LITE_TV_REMOTE_CONFIG_URL).
+         * Safely falls back to [FALLBACK_REMOTE_URL] if empty, blank, or inaccessible.
+         */
+        val DEFAULT_REMOTE_URL: String = try {
+            BuildConfig.LITE_TV_REMOTE_CONFIG_URL.ifBlank { FALLBACK_REMOTE_URL }
+        } catch (e: Throwable) {
+            FALLBACK_REMOTE_URL
+        }
     }
+
+    /**
+     * Active remote configuration URL for this repository instance.
+     */
+    val remoteConfigUrl: String = customRemoteUrl?.takeIf { it.isNotBlank() } ?: DEFAULT_REMOTE_URL
 
     /**
      * Get the best available config: cached → bundled default.
@@ -51,8 +73,9 @@ class SduiConfigRepository(private val context: Context) {
      * Fetch remote config, validate, and cache if valid.
      * Returns the new config or null if fetch/validation failed.
      */
-    suspend fun fetchRemoteConfig(url: String): SduiConfig? = withContext(Dispatchers.IO) {
-        if (url.isEmpty()) {
+    suspend fun fetchRemoteConfig(url: String = remoteConfigUrl): SduiConfig? = withContext(Dispatchers.IO) {
+        val targetUrl = url.ifBlank { remoteConfigUrl }
+        if (targetUrl.isEmpty()) {
             Log.d(TAG, "No remote config URL configured")
             return@withContext null
         }

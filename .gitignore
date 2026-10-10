@@ -23,6 +23,10 @@ buildOutputCleanup/
 
 # Local configuration file (sdk path, etc)
 local.properties
+.env
+.env.local
+.env.*.local
+!.env.example
 
 # Proguard / R8
 proguard/
