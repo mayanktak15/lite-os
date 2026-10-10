@@ -6,16 +6,16 @@
     android:layout_height="match_parent"
     android:background="@android:color/black">
 
-    <!-- ExoPlayer view -->
+    <!-- ExoPlayer view (buffering handled via custom overlay for rich state communication) -->
     <androidx.media3.ui.PlayerView
         android:id="@+id/playerView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:use_controller="false"
-        app:show_buffering="always"
+        app:show_buffering="never"
         app:surface_type="surface_view" />
 
-    <!-- Buffering overlay -->
+    <!-- Buffering / Connecting / Reconnecting overlay -->
     <LinearLayout
         android:id="@+id/bufferingOverlay"
         android:layout_width="match_parent"
@@ -23,22 +23,33 @@
         android:gravity="center"
         android:orientation="vertical"
         android:background="@color/buffering_bg"
+        android:padding="24dp"
         android:visibility="gone">
 
         <ProgressBar
+            android:id="@+id/bufferingProgressBar"
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:indeterminate="true" />
 
         <TextView
+            android:id="@+id/bufferingStatusText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/buffering"
-            android:layout_marginTop="12dp"
-            style="@style/TextStyle.Body" />
+            android:layout_marginTop="16dp"
+            style="@style/TextStyle.Subheading" />
+
+        <TextView
+            android:id="@+id/bufferingDetailText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/text_secondary"
+            style="@style/TextStyle.Caption" />
     </LinearLayout>
 
-    <!-- Channel info overlay (shown on UP press) -->
+    <!-- Channel info overlay (shown on start and UP press) -->
     <LinearLayout
         android:id="@+id/channelInfoOverlay"
         android:layout_width="match_parent"
@@ -66,7 +77,7 @@
             android:layout_marginTop="4dp" />
     </LinearLayout>
 
-    <!-- Error overlay -->
+    <!-- Comprehensive Error overlay with D-pad actions & failover notice -->
     <LinearLayout
         android:id="@+id/playerErrorOverlay"
         android:layout_width="match_parent"
@@ -74,23 +85,89 @@
         android:gravity="center"
         android:orientation="vertical"
         android:background="@color/buffering_bg"
+        android:padding="32dp"
         android:visibility="gone">
+
+        <TextView
+            android:id="@+id/playerErrorTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Channel Unavailable"
+            android:textColor="@color/error_red"
+            style="@style/TextStyle.Heading" />
 
         <TextView
             android:id="@+id/playerErrorText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/error_playback"
-            android:textSize="@dimen/text_subheading"
-            android:textColor="@color/error_red" />
+            android:layout_marginTop="12dp"
+            android:gravity="center"
+            style="@style/TextStyle.Body" />
 
         <TextView
+            android:id="@+id/playerErrorDiagnostics"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/retry"
-            android:textSize="@dimen/text_body"
-            android:textColor="@color/text_secondary"
-            android:layout_marginTop="12dp" />
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:textColor="@color/text_tertiary"
+            style="@style/TextStyle.Caption" />
+
+        <TextView
+            android:id="@+id/playerFailoverCountdownText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:textColor="@color/accent"
+            android:gravity="center"
+            style="@style/TextStyle.Body"
+            android:visibility="gone" />
+
+        <LinearLayout
+            android:id="@+id/playerErrorActions"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:layout_marginTop="24dp">
+
+            <Button
+                android:id="@+id/btnRetry"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="130dp"
+                android:text="Retry"
+                android:background="@drawable/bg_channel_card"
+                android:textColor="@color/text_primary"
+                android:focusable="true"
+                android:nextFocusRight="@+id/btnNextChannel" />
+
+            <Button
+                android:id="@+id/btnNextChannel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="150dp"
+                android:layout_marginStart="16dp"
+                android:text="Next Channel ▶"
+                android:background="@drawable/bg_channel_card"
+                android:textColor="@color/text_primary"
+                android:focusable="true"
+                android:nextFocusLeft="@+id/btnRetry"
+                android:nextFocusRight="@+id/btnBack" />
+
+            <Button
+                android:id="@+id/btnBack"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:minWidth="130dp"
+                android:layout_marginStart="16dp"
+                android:text="Back"
+                android:background="@drawable/bg_channel_card"
+                android:textColor="@color/text_primary"
+                android:focusable="true"
+                android:nextFocusLeft="@+id/btnNextChannel" />
+        </LinearLayout>
     </LinearLayout>
 
 </FrameLayout>
