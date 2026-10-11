@@ -61,19 +61,43 @@ A full native Android application stack has been designed, implemented, and veri
 - **Background Periodic Syncing**: [UpdateSyncScheduler.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/update/UpdateSyncScheduler.kt) and [UpdateSyncJobService.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/update/UpdateSyncJobService.kt) schedule periodic checks with Android's native `JobScheduler` without adding external library bloat. Playback lifecycle is monitored in [PlayerActivity.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/PlayerActivity.kt) to ensure background updates never interrupt active video streams.
 - **Diagnostic Inspection**: [SettingsActivity.kt](file:///home/linus/Desktop/tv/app/src/main/java/com/litetv/app/SettingsActivity.kt) displays real-time sync results, catalogue diff counters, active source URLs, SDUI config status, and manual update checks.
 
-### 8. Automated Testing & Verification
-- Comprehensive unit test suites covering the entire update and configuration pipeline:
-  - [M3uParserTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/iptv/M3uParserTest.kt): Tag extraction, deduplication, stream sanitization.
-  - [CatalogueDiffTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/iptv/CatalogueDiffTest.kt): Channel additions, deletions, renames, and recategorizations.
-  - [ChannelSearchIndexTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/iptv/ChannelSearchIndexTest.kt): Token matching, accent normalization, instant catalogue reflection.
-  - [DiskCacheTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/cache/DiskCacheTest.kt): Atomic writes, rollback to `.bak`, SHA-256 integrity, metadata storage.
-  - [HttpClientTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/network/HttpClientTest.kt): URL validation, conditional headers, 304 handling.
-  - [SduiConfigParserTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/sdui/SduiConfigParserTest.kt): Schema versioning (v1, v2), feature flags, search config, app update parsing, unknown component rejection.
-  - [SduiConfigRepositoryTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/sdui/SduiConfigRepositoryTest.kt): Cache reading, fallback, and automatic rollback on corrupt remote configs.
-  - [AppUpdateManagerTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/update/AppUpdateManagerTest.kt): Soft vs mandatory updates, version comparisons, up-to-date checks.
-  - [PlaylistRepositoryTest.kt](file:///home/linus/Desktop/tv/app/src/test/java/com/litetv/app/iptv/PlaylistRepositoryTest.kt): Offline startup, caching, search index synchronization.
-- All unit tests pass cleanly in Gradle (`./gradlew test`).
-- Debug APK successfully compiled (`app-debug.apk`, 16 MB).
+### 8. Repository Audit, Endpoint Reconciliation & Player Stabilization
+- **M3U Parser Robustness**:
+  - Implemented unquoted attribute parsing (`ATTR_REGEX` matching both `key="value"` and `key=value`).
+  - Fixed comma truncation in channel titles: replaced `lastIndexOf(',')` with `findUnquotedComma()` to ensure channel names with commas (e.g. `Zee Cinema, Mumbai (HD)`) are preserved accurately without losing title prefixes.
+  - Added UTF-8 Byte Order Mark (BOM, `\uFEFF`) stripping to prevent parse failures on BOM-prefixed playlists.
+- **Network Security & Cleartext Traffic Policy**:
+  - Added `network_security_config.xml` linked in `AndroidManifest.xml` permitting cleartext HTTP traffic (`cleartextTrafficPermitted="true"`), essential for standard HTTP IPTV streams on Android 9+ (API 28+).
+- **HTTP Client Relative Redirects**:
+  - Added `resolveRedirectUrl()` in `HttpClient.kt` to resolve relative `Location` headers across HTTP 301–308 redirects against the parent URI.
+- **TV Remote Navigation & Key Debouncing**:
+  - Added complete TV remote and media key handling in `PlayerActivity.kt` (`KEYCODE_MEDIA_PLAY_PAUSE`, `KEYCODE_MEDIA_PLAY`, `KEYCODE_MEDIA_PAUSE`, `KEYCODE_MEDIA_NEXT`, `KEYCODE_MEDIA_PREVIOUS`, and `KEYCODE_BUTTON_A`).
+  - Implemented key repeat suppression (`event.repeatCount > 0`) to prevent rapid double-switch and race conditions when keys are held down.
+- **Android TV Focus Restoration**:
+  - Prevented destructive `removeAllViews()` re-rendering in `MainActivity.onResume()` when returning from playback.
+  - Implemented view tagging via `channel.streamUrl` in `SduiComponentFactory.kt` and automatic focus restoration to the previously playing channel card.
+- **Binder IPC Safety & Catalogue Fallback**:
+  - Capped channel list serialization in `SduiActionHandler.kt` to 200 items to avoid Android Binder `TransactionTooLargeException` on large playlists (14,000+ streams).
+  - Implemented graceful fallback in `PlayerActivity.kt` to load the full playlist directly from `PlaylistRepository.loadFromCache()` when extras are omitted or bounded.
+- **Dynamic Playlist Sources in Settings**:
+  - Upgraded `SettingsActivity.kt` to dynamically read playlist sources from `SduiConfigRepository.getCachedOrDefault().playlistSources` with fallback to default feeds.
+
+### 9. Automated Testing & Verification
+- **Expanded Test Suite (69 Tests, 0 Failures)**:
+  - [M3uParserTest.kt](app/src/test/java/com/litetv/app/iptv/M3uParserTest.kt): Tag extraction, deduplication, stream sanitization, unquoted attributes, commas in channel names, and UTF-8 BOM handling.
+  - [PlayerNavigationTest.kt](app/src/test/java/com/litetv/app/player/PlayerNavigationTest.kt): Channel index wrapping, previous/next bounds, empty playlist safety, single-channel playlist transitions.
+  - [HttpClientTest.kt](app/src/test/java/com/litetv/app/network/HttpClientTest.kt): URL validation, conditional headers, 304 handling, and relative/absolute redirect resolution.
+  - [CatalogueDiffTest.kt](app/src/test/java/com/litetv/app/iptv/CatalogueDiffTest.kt): Channel additions, deletions, renames, and recategorizations.
+  - [ChannelSearchIndexTest.kt](app/src/test/java/com/litetv/app/iptv/ChannelSearchIndexTest.kt): Token matching, accent normalization, instant catalogue reflection.
+  - [DiskCacheTest.kt](app/src/test/java/com/litetv/app/cache/DiskCacheTest.kt): Atomic writes, rollback to `.bak`, SHA-256 integrity, metadata storage.
+  - [SduiConfigParserTest.kt](app/src/test/java/com/litetv/app/sdui/SduiConfigParserTest.kt): Schema versioning (v1, v2), feature flags, search config, app update parsing, unknown component rejection.
+  - [SduiConfigRepositoryTest.kt](app/src/test/java/com/litetv/app/sdui/SduiConfigRepositoryTest.kt): Cache reading, fallback, and automatic rollback on corrupt remote configs.
+  - [AppUpdateManagerTest.kt](app/src/test/java/com/litetv/app/update/AppUpdateManagerTest.kt): Soft vs mandatory updates, version comparisons, up-to-date checks.
+  - [PlaylistRepositoryTest.kt](app/src/test/java/com/litetv/app/iptv/PlaylistRepositoryTest.kt): Offline startup, caching, search index synchronization.
+- **Build & Quality Gates**:
+  - All 69 unit tests pass cleanly via `./gradlew test` (0 failures).
+  - Debug APK compiles cleanly via `./gradlew assembleDebug` (17 MB).
+  - Static analysis clean via `./gradlew lintDebug` (0 errors).
 
 ---
 
@@ -226,8 +250,11 @@ The application will launch in landscape mode with touch and virtual navigation 
 | **D-Pad Down** | Move focus down | Hide channel info banner |
 | **D-Pad Left** | Move focus left | Switch to **Previous Channel** |
 | **D-Pad Right** | Move focus right | Switch to **Next Channel** |
-| **OK / Enter** | Select channel / open card | Toggle **Play / Pause** |
-| **Back** | Double-tap to exit app | Return to Channel List |
+| **OK / Enter / Button A** | Select channel / open card | Toggle **Play / Pause** |
+| **Media Play / Pause** | - | Toggle **Play / Pause** |
+| **Media Next** | - | Switch to **Next Channel** |
+| **Media Previous** | - | Switch to **Previous Channel** |
+| **Back** | Double-tap to exit app | Return to Channel List (restores focus to current channel) |
 
 ### Simulating Remote Navigation via ADB
 
