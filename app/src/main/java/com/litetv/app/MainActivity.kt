@@ -55,6 +55,7 @@ class MainActivity : AppCompatActivity() {
     private var currentConfig: SduiConfig? = null
     private var backPressedTime: Long = 0
     private var updateDialog: AlertDialog? = null
+    private var lastSelectedChannelStreamUrl: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -228,6 +229,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun renderConfig(config: SduiConfig, channels: List<Channel>) {
         renderer.render(config, sectionsContainer, channels) { channel ->
+            lastSelectedChannelStreamUrl = channel.streamUrl
             actionHandler.playChannel(channel, channels)
         }
     }
@@ -272,9 +274,32 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (currentConfig != null && playlistRepository.channels.isNotEmpty()) {
+        if (sectionsContainer.childCount == 0 && currentConfig != null && playlistRepository.channels.isNotEmpty()) {
             renderConfig(currentConfig!!, playlistRepository.channels)
         }
+        restoreFocusToSelectedChannel()
+    }
+
+    private fun restoreFocusToSelectedChannel() {
+        val targetUrl = lastSelectedChannelStreamUrl ?: return
+        sectionsContainer.post {
+            val foundView = findViewWithTagRecursively(sectionsContainer, targetUrl)
+            if (foundView != null) {
+                foundView.requestFocus()
+            }
+        }
+    }
+
+    private fun findViewWithTagRecursively(root: View, tag: String): View? {
+        if (root.tag == tag) return root
+        if (root is android.view.ViewGroup) {
+            for (i in 0 until root.childCount) {
+                val child = root.getChildAt(i)
+                val found = findViewWithTagRecursively(child, tag)
+                if (found != null) return found
+            }
+        }
+        return null
     }
 
     override fun onDestroy() {

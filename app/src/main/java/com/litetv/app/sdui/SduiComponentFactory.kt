@@ -156,6 +156,7 @@ class SduiComponentFactory(private val context: Context) {
                 holder.logo.setImageResource(R.drawable.ic_placeholder)
             }
 
+            holder.itemView.tag = channel.streamUrl
             holder.itemView.setOnClickListener { onChannelClick(channel) }
             holder.itemView.isFocusable = true
             holder.itemView.isFocusableInTouchMode = true

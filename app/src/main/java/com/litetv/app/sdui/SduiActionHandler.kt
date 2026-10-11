@@ -27,15 +27,20 @@ class SduiActionHandler(private val context: Context) {
             putExtra(PlayerActivity.EXTRA_STREAM_URL, channel.streamUrl)
             putExtra(PlayerActivity.EXTRA_CHANNEL_NAME, channel.name)
             putExtra(PlayerActivity.EXTRA_CHANNEL_GROUP, channel.group)
-            putExtra(PlayerActivity.EXTRA_CHANNEL_INDEX, channelList.indexOf(channel))
-            putStringArrayListExtra(
-                PlayerActivity.EXTRA_CHANNEL_URLS,
-                ArrayList(channelList.map { it.streamUrl })
-            )
-            putStringArrayListExtra(
-                PlayerActivity.EXTRA_CHANNEL_NAMES,
-                ArrayList(channelList.map { it.name })
-            )
+            val index = channelList.indexOf(channel)
+            putExtra(PlayerActivity.EXTRA_CHANNEL_INDEX, if (index >= 0) index else 0)
+
+            // Bound channel extras to prevent Binder TransactionTooLargeException (>500KB)
+            if (channelList.size <= 200) {
+                putStringArrayListExtra(
+                    PlayerActivity.EXTRA_CHANNEL_URLS,
+                    ArrayList(channelList.map { it.streamUrl })
+                )
+                putStringArrayListExtra(
+                    PlayerActivity.EXTRA_CHANNEL_NAMES,
+                    ArrayList(channelList.map { it.name })
+                )
+            }
         }
         context.startActivity(intent)
     }

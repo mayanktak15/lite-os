@@ -17,6 +17,8 @@ object M3uParser {
     private const val EXTINF_PREFIX = "#EXTINF:"
     private const val EXTM3U_PREFIX = "#EXTM3U"
 
+    private val ATTR_REGEX = Regex("""([a-zA-Z0-9_-]+)=(?:"([^"]*)"|'([^']*)'|([^,\s]+))""")
+
     /**
      * Parse an M3U playlist from an InputStream.
      * Returns a list of parsed channels, bounded at MAX_CHANNELS.
@@ -30,9 +32,9 @@ object M3uParser {
         var lineCount = 0
 
         try {
-            reader.forEachLine { line ->
+            reader.forEachLine { rawLine ->
                 lineCount++
-                val trimmed = line.trim()
+                val trimmed = rawLine.removePrefix("\uFEFF").trim()
 
                 when {
                     trimmed.isEmpty() || trimmed.startsWith(EXTM3U_PREFIX) -> {
@@ -95,13 +97,22 @@ object M3uParser {
             )
         }
 
-        val tvgId = extractAttribute(extInf, "tvg-id") ?: "channel_$index"
-        val tvgName = extractAttribute(extInf, "tvg-name")
-        val tvgLogo = extractAttribute(extInf, "tvg-logo") ?: ""
-        val groupTitle = extractAttribute(extInf, "group-title") ?: ""
+        val commaIndex = findUnquotedComma(extInf)
+        val metadataPart = if (commaIndex != -1) extInf.substring(0, commaIndex) else extInf
+        val titlePart = if (commaIndex != -1 && commaIndex < extInf.length - 1) {
+            extInf.substring(commaIndex + 1).trim()
+        } else {
+            ""
+        }
 
-        // Display name: tvg-name, or the text after the last comma in EXTINF
-        val displayName = tvgName ?: extractDisplayName(extInf) ?: "Channel ${index + 1}"
+        val attributes = extractAllAttributes(metadataPart)
+
+        val tvgId = attributes["tvg-id"]?.takeIf { it.isNotEmpty() } ?: "channel_$index"
+        val tvgName = attributes["tvg-name"]?.takeIf { it.isNotEmpty() }
+        val tvgLogo = attributes["tvg-logo"] ?: ""
+        val groupTitle = attributes["group-title"] ?: ""
+
+        val displayName = tvgName ?: titlePart.ifEmpty { "Channel ${index + 1}" }
 
         return Channel(
             id = tvgId,
@@ -112,32 +123,37 @@ object M3uParser {
         )
     }
 
-    /**
-     * Extract an attribute value from an EXTINF line.
-     * Example: tvg-name="Channel Name" → "Channel Name"
-     */
-    private fun extractAttribute(extInf: String, attribute: String): String? {
-        val key = "$attribute=\""
-        val startIndex = extInf.indexOf(key)
-        if (startIndex == -1) return null
-
-        val valueStart = startIndex + key.length
-        val valueEnd = extInf.indexOf('"', valueStart)
-        if (valueEnd == -1) return null
-
-        val value = extInf.substring(valueStart, valueEnd).trim()
-        return value.ifEmpty { null }
+    private fun findUnquotedComma(extInf: String): Int {
+        var inQuotes = false
+        var quoteChar = '"'
+        for (i in extInf.indices) {
+            val c = extInf[i]
+            if (c == '"' || c == '\'') {
+                if (!inQuotes) {
+                    inQuotes = true
+                    quoteChar = c
+                } else if (c == quoteChar) {
+                    inQuotes = false
+                }
+            } else if (c == ',' && !inQuotes) {
+                return i
+            }
+        }
+        return -1
     }
 
-    /**
-     * Extract the display name from the EXTINF line (text after last comma).
-     * Example: #EXTINF:-1 ...,Channel Name → "Channel Name"
-     */
-    private fun extractDisplayName(extInf: String): String? {
-        val commaIndex = extInf.lastIndexOf(',')
-        if (commaIndex == -1 || commaIndex >= extInf.length - 1) return null
-        val name = extInf.substring(commaIndex + 1).trim()
-        return name.ifEmpty { null }
+    private fun extractAllAttributes(text: String): Map<String, String> {
+        val map = mutableMapOf<String, String>()
+        for (match in ATTR_REGEX.findAll(text)) {
+            val key = match.groupValues[1]
+            val value = match.groupValues[2].ifEmpty {
+                match.groupValues[3].ifEmpty {
+                    match.groupValues[4]
+                }
+            }.trim()
+            map[key] = value
+        }
+        return map
     }
 
     /**

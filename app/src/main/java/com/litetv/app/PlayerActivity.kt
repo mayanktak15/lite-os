@@ -11,6 +11,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.media3.ui.PlayerView
+import com.litetv.app.iptv.PlaylistRepository
 import com.litetv.app.player.PlaybackErrorInfo
 import com.litetv.app.player.PlaybackState
 import com.litetv.app.player.PlayerManager
@@ -110,8 +111,28 @@ class PlayerActivity : AppCompatActivity(), PlayerManager.PlayerListener {
         val channelName = intent.getStringExtra(EXTRA_CHANNEL_NAME) ?: "Unknown"
         val channelGroup = intent.getStringExtra(EXTRA_CHANNEL_GROUP) ?: ""
         currentIndex = intent.getIntExtra(EXTRA_CHANNEL_INDEX, 0)
-        channelUrls = intent.getStringArrayListExtra(EXTRA_CHANNEL_URLS) ?: listOf(streamUrl)
-        channelNames = intent.getStringArrayListExtra(EXTRA_CHANNEL_NAMES) ?: listOf(channelName)
+        val urlsExtra = intent.getStringArrayListExtra(EXTRA_CHANNEL_URLS)
+        val namesExtra = intent.getStringArrayListExtra(EXTRA_CHANNEL_NAMES)
+
+        if (!urlsExtra.isNullOrEmpty()) {
+            channelUrls = urlsExtra
+            channelNames = namesExtra ?: urlsExtra
+        } else {
+            // Load catalogue from repository to allow switching between all channels without Binder limit
+            val repo = PlaylistRepository(this)
+            repo.loadFromCache()
+            if (repo.channels.isNotEmpty()) {
+                channelUrls = repo.channels.map { it.streamUrl }
+                channelNames = repo.channels.map { it.name }
+                val idx = channelUrls.indexOf(streamUrl)
+                if (idx != -1) {
+                    currentIndex = idx
+                }
+            } else {
+                channelUrls = listOf(streamUrl)
+                channelNames = listOf(channelName)
+            }
+        }
 
         // Initialize PlayerManager
         playerManager = PlayerManager(this)
@@ -171,6 +192,14 @@ class PlayerActivity : AppCompatActivity(), PlayerManager.PlayerListener {
     // --- TV D-pad Controls ---
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
+        // Prevent accidental double/rapid switches on held remote keys
+        if (event != null && event.repeatCount > 0) {
+            when (keyCode) {
+                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT,
+                KeyEvent.KEYCODE_MEDIA_NEXT, KeyEvent.KEYCODE_MEDIA_PREVIOUS -> return true
+            }
+        }
+
         // If error overlay is active and user interacts, cancel automatic failover countdown
         if (errorOverlay.visibility == View.VISIBLE) {
             cancelFailoverCountdown()
@@ -179,12 +208,16 @@ class PlayerActivity : AppCompatActivity(), PlayerManager.PlayerListener {
                     finish()
                     return true
                 }
-                KeyEvent.KEYCODE_DPAD_LEFT -> {
+                KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
                     switchToPreviousChannel()
                     return true
                 }
-                KeyEvent.KEYCODE_DPAD_RIGHT -> {
+                KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_MEDIA_NEXT -> {
                     switchToNextChannel()
+                    return true
+                }
+                KeyEvent.KEYCODE_BUTTON_A -> {
+                    currentFocus?.performClick()
                     return true
                 }
             }
@@ -192,15 +225,24 @@ class PlayerActivity : AppCompatActivity(), PlayerManager.PlayerListener {
         }
 
         return when (keyCode) {
-            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_BUTTON_A,
+            KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> {
                 playerManager.togglePlayPause()
                 true
             }
-            KeyEvent.KEYCODE_DPAD_LEFT -> {
+            KeyEvent.KEYCODE_MEDIA_PLAY -> {
+                playerManager.resume()
+                true
+            }
+            KeyEvent.KEYCODE_MEDIA_PAUSE -> {
+                playerManager.pause()
+                true
+            }
+            KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_MEDIA_PREVIOUS -> {
                 switchToPreviousChannel()
                 true
             }
-            KeyEvent.KEYCODE_DPAD_RIGHT -> {
+            KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_MEDIA_NEXT -> {
                 switchToNextChannel()
                 true
             }

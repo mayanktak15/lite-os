@@ -92,4 +92,45 @@ class M3uParserTest {
         val channels = M3uParser.parse(ByteArrayInputStream(ByteArray(0)))
         assertTrue(channels.isEmpty())
     }
+
+    @Test
+    fun parse_unquotedAttributes_extractsMetadataCorrectly() {
+        val m3uContent = """
+            #EXTM3U
+            #EXTINF:-1 tvg-id=NDTVIndia tvg-name=NDTV group-title=News,NDTV India
+            https://example.com/stream/ndtv.m3u8
+        """.trimIndent()
+
+        val channels = M3uParser.parse(ByteArrayInputStream(m3uContent.toByteArray()))
+
+        assertEquals(1, channels.size)
+        val ch = channels[0]
+        assertEquals("NDTVIndia", ch.id)
+        assertEquals("NDTV", ch.name)
+        assertEquals("News", ch.group)
+    }
+
+    @Test
+    fun parse_channelNameWithCommas_preservesFullDisplayName() {
+        val m3uContent = """
+            #EXTM3U
+            #EXTINF:-1 tvg-id="ZeeCinema",Zee Cinema, Mumbai (HD)
+            https://example.com/stream/zeecinema.m3u8
+        """.trimIndent()
+
+        val channels = M3uParser.parse(ByteArrayInputStream(m3uContent.toByteArray()))
+
+        assertEquals(1, channels.size)
+        assertEquals("Zee Cinema, Mumbai (HD)", channels[0].name)
+    }
+
+    @Test
+    fun parse_utf8Bom_stripsBomAndParsesCorrectly() {
+        val m3uContent = "\uFEFF#EXTM3U\n#EXTINF:-1,BOM Channel\nhttps://example.com/stream/bom.m3u8"
+
+        val channels = M3uParser.parse(ByteArrayInputStream(m3uContent.toByteArray(Charsets.UTF_8)))
+
+        assertEquals(1, channels.size)
+        assertEquals("BOM Channel", channels[0].name)
+    }
 }

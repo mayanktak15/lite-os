@@ -24,11 +24,21 @@ class SettingsActivity : AppCompatActivity() {
 
     companion object {
         private const val TAG = "SettingsActivity"
-        private val SOURCES = listOf(
+        private val DEFAULT_SOURCES = listOf(
             "https://iptv-org.github.io/iptv/countries/in.m3u" to "IPTV-Org India",
             "https://iptv-org.github.io/iptv/categories/news.m3u" to "IPTV-Org News",
             "https://romaxa55.github.io/world_ip_tv/output/index.m3u" to "World IPTV"
         )
+    }
+
+    private fun getActiveSources(): List<Pair<String, String>> {
+        val config = configRepository.getCachedOrDefault()
+        val sduiSources = config.playlistSources
+        return if (sduiSources.isNotEmpty()) {
+            sduiSources.map { it.url to it.label }
+        } else {
+            DEFAULT_SOURCES
+        }
     }
 
     private lateinit var playlistRepository: PlaylistRepository
@@ -68,18 +78,22 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun setupSourceButtons() {
-        val sourceViews = listOf(
-            R.id.sourceIptvOrgIndia to 0,
-            R.id.sourceIptvOrgNews to 1,
-            R.id.sourceWorldIptv to 2
+        val sources = getActiveSources()
+        val cardIds = listOf(
+            R.id.sourceIptvOrgIndia,
+            R.id.sourceIptvOrgNews,
+            R.id.sourceWorldIptv
         )
 
-        for ((viewId, sourceIndex) in sourceViews) {
-            findViewById<View>(viewId)?.setOnClickListener {
-                selectSource(SOURCES[sourceIndex].first, SOURCES[sourceIndex].second)
+        for (i in cardIds.indices) {
+            val cardId = cardIds[i]
+            val source = sources.getOrNull(i)
+            if (source != null) {
+                findViewById<View>(cardId)?.setOnClickListener {
+                    selectSource(source.first, source.second)
+                }
+                updateSourceHighlight(cardId, source.first)
             }
-            // Highlight active source
-            updateSourceHighlight(viewId, SOURCES[sourceIndex].first)
         }
 
         // Custom URL source
@@ -201,13 +215,13 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     private fun updateAllSourceHighlights() {
-        val sourceViews = listOf(
-            R.id.sourceIptvOrgIndia to 0,
-            R.id.sourceIptvOrgNews to 1,
-            R.id.sourceWorldIptv to 2
-        )
-        for ((viewId, sourceIndex) in sourceViews) {
-            updateSourceHighlight(viewId, SOURCES[sourceIndex].first)
+        val sources = getActiveSources()
+        val cardIds = listOf(R.id.sourceIptvOrgIndia, R.id.sourceIptvOrgNews, R.id.sourceWorldIptv)
+        for (i in cardIds.indices) {
+            val source = sources.getOrNull(i)
+            if (source != null) {
+                updateSourceHighlight(cardIds[i], source.first)
+            }
         }
     }
 

@@ -120,7 +120,7 @@ object HttpClient {
                         Log.w(TAG, "Redirect without Location header")
                         return HttpResult(statusCode = responseCode, body = null)
                     }
-                    currentUrl = location
+                    currentUrl = resolveRedirectUrl(currentUrl, location)
                     redirectCount++
                     connection.disconnect()
                     continue
@@ -224,7 +224,7 @@ object HttpClient {
                 if (responseCode in 301..308) {
                     val location = connection.getHeaderField("Location")
                     if (location.isNullOrEmpty()) return null
-                    currentUrl = location
+                    currentUrl = resolveRedirectUrl(currentUrl, location)
                     redirectCount++
                     connection.disconnect()
                     continue
@@ -260,6 +260,17 @@ object HttpClient {
             }
         }
         return null
+    }
+
+    /**
+     * Resolve redirect location URL, handling both absolute and relative URLs.
+     */
+    internal fun resolveRedirectUrl(baseUrl: String, location: String): String {
+        return try {
+            URL(URL(baseUrl), location).toString()
+        } catch (_: Exception) {
+            location
+        }
     }
 }
 

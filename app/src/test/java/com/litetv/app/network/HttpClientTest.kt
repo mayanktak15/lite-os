@@ -45,4 +45,25 @@ class HttpClientTest {
         assertEquals("Thu, 1 Jan 2026 00:00:00 GMT", result.lastModified)
         assertNull(result.body)
     }
+
+    @Test
+    fun resolveRedirectUrl_resolvesRelativeAndAbsoluteLocations() {
+        val base = "https://example.com/api/v1/data.json"
+
+        // Relative path
+        val rel1 = HttpClient.resolveRedirectUrl(base, "/v2/data.json")
+        assertEquals("https://example.com/v2/data.json", rel1)
+
+        // Relative sibling
+        val rel2 = HttpClient.resolveRedirectUrl(base, "other.json")
+        assertEquals("https://example.com/api/v1/other.json", rel2)
+
+        // Relative with ..
+        val rel3 = HttpClient.resolveRedirectUrl(base, "../v2/data.json")
+        assertEquals("https://example.com/api/v2/data.json", rel3)
+
+        // Absolute URL
+        val abs = HttpClient.resolveRedirectUrl(base, "https://cdn.example.com/live/data.json")
+        assertEquals("https://cdn.example.com/live/data.json", abs)
+    }
 }

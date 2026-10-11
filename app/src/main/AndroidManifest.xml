@@ -28,7 +28,8 @@
         android:theme="@style/Theme.LiteTV"
         android:largeHeap="false"
         android:hardwareAccelerated="true"
-        android:usesCleartextTraffic="false"
+        android:usesCleartextTraffic="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         tools:targetApi="28">
 
         <!-- Main Activity - TV and Phone Launcher entry point -->
